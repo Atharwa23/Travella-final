@@ -150,11 +150,22 @@ function Mytrips() {
   
 
   return (
-    <div className='py-2'>
+<div className='py-2'>
 
-      <Hotels/>
-      <Places/>
-    </div>
+  {/* Box 1: Hotels */}
+  <div className='p-4 pl-8 bg-white rounded-lg shadow-md dark:bg-gray-800 border dark:border-gray-700'>
+    <Hotels/>
+  </div>
+
+  <div className='my-4'></div>
+
+  {/* Box 2: Places */}
+  <div className='p-4 bg-white rounded-lg shadow-md dark:bg-gray-800 border dark:border-gray-700'>
+    <Places/>
+  </div>
+  
+</div>
+
   )
 }
 

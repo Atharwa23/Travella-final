@@ -5,16 +5,21 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card"; // Import for error state
 
 const PlacesDetails = ({ PlaceDetailsPageRef }) => {
   const { selectedPlace } = useCache();
 
+  // Use descriptive names from the selectedPlace
   const {
-    name,
-    address,
-    rating,
-    price,
+    activityName, // Use the specific name
+    details,
+    pricing,
+    location,
+    timings,
   } = selectedPlace || {};
 
   const { lat, lng } = useParams();
@@ -22,7 +27,6 @@ const PlacesDetails = ({ PlaceDetailsPageRef }) => {
   const longitude = parseFloat(lng);
 
   const [map, setMap] = useState(null);
-
 
   // Center map when it loads or coordinates change
   useEffect(() => {
@@ -36,6 +40,7 @@ const PlacesDetails = ({ PlaceDetailsPageRef }) => {
   const containerStyle = {
     width: "100%",
     height: "400px",
+    borderRadius: "0.75rem", // Match our theme's --radius
   };
 
   const mapCenter = {
@@ -56,51 +61,74 @@ const PlacesDetails = ({ PlaceDetailsPageRef }) => {
     setMap(null);
   }, []);
 
-  // Check if coordinates are valid
   const hasValidCoordinates = !isNaN(latitude) && !isNaN(longitude) && latitude !== 0 && longitude !== 0;
 
+  // 1. Handle case where no place is selected (e.g., page refresh)
+  if (!selectedPlace) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <div className="text-7xl mb-4" role="img" aria-label="warning">
+          ⚠️
+        </div>
+        <h2 className="text-2xl font-bold mb-2">No Place Selected</h2>
+        <p className="text-muted-foreground mb-6 max-w-md">
+          It looks like there's no place data. This can happen if you refresh the page.
+        </p>
+        <Button asChild className="px-6 py-6 text-lg font-semibold">
+          <Link to="/my-trips">Back to All Trips</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div ref={PlaceDetailsPageRef} className="main">
+    <div ref={PlaceDetailsPageRef} className="max-w-6xl mx-auto px-4 py-10 min-h-screen">
       <div className="place-details mt-5">
         <div className="text text-center">
-          <h2 className="text-3xl md:text-5xl mt-5 font-bold flex items-center justify-center">
-            <span className="bg-gradient-to-b text-7xl from-blue-400 to-blue-700 bg-clip-text text-center text-transparent">
-              {name}
-            </span>
+          {/* 2. Themed Header */}
+          <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-center mt-5 bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-600 dark:from-orange-400 dark:via-amber-300 dark:to-yellow-400 bg-clip-text text-transparent leading-tight">
+            {activityName || "Place Details"}
           </h2>
-          📍
-          <span className="bg-gradient-to-b from-primary/90 to-primary/60 bg-clip-text text-transparent text-xl">
-            {address}
-          </span>
+          {/* 3. Themed Address/Location */}
+          <p className="text-lg md:text-xl text-muted-foreground text-center mt-4">
+            📍 {location || "Location not available"}
+          </p>
+          <p className="text-md md:text-lg text-muted-foreground text-center mt-2 max-w-2xl mx-auto">
+            {details || ""}
+          </p>
         </div>
 
-        <div className="flex items-center justify-center py-2 gap-2 mt-2">
-          <h3 className="location-info opacity-90 bg-foreground/20 px-2 md:px-4 flex items-center justify-center rounded-md text-center text-md font-medium tracking-tight text-primary/80 md:text-lg">
-            💵 {price}
-          </h3>
-          <h3 className="location-info opacity-90 bg-foreground/20 px-2 md:px-4 flex items-center justify-center rounded-md text-center text-md font-medium tracking-tight text-primary/80 md:text-lg">
-            ⭐ {rating} Stars
-          </h3>
-        </div>
-
-        {/* Debug info - remove this in production */}
-        <div className="text-center text-sm text-gray-500 mt-2">
-          Coordinates: {latitude}, {longitude}
+        {/* 3. Themed Badges */}
+        <div className="flex items-center justify-center flex-wrap py-2 gap-4 mt-4">
+          <div className="rounded-full bg-muted px-5 py-2 text-md font-medium text-muted-foreground">
+            💵 {pricing || "N/A"}
+          </div>
+          <div className="rounded-full bg-muted px-5 py-2 text-md font-medium text-muted-foreground">
+            🕒 {timings || "N/A"}
+          </div>
         </div>
       </div>
 
-      <div className="map-location-place mt-5 w-full bg-gradient-to-b from-primary/90 to-primary/60 font-bold bg-clip-text text-transparent text-3xl text-center">
+      {/* Themed Map Title */}
+      <div className="map-location-place mt-16 mb-8 w-full bg-gradient-to-b from-primary/90 to-primary/60 font-bold bg-clip-text text-transparent text-3xl text-center">
         Map Location
       </div>
       
-      <div className="place-map rounded-lg m-4 md:m-2 overflow-hidden shadow-md flex flex-col gap-2 md:flex-row">
+      {/* Themed Map Container */}
+      <div className="place-map rounded-2xl m-2 overflow-hidden shadow-xl border bg-card/50 backdrop-blur-sm flex flex-col gap-2 md:flex-row">
         {!isLoaded ? (
-          <div className="flex items-center justify-center w-full h-[400px]">
-            <span className="text-gray-500 animate-pulse">Loading Map...</span>
+          // 4. Styled Loading State
+          <div className="flex flex-col items-center justify-center w-full h-[400px] bg-muted/50">
+            <AiOutlineLoading3Quarters className="h-10 w-10 animate-spin text-primary" />
+            <span className="text-muted-foreground mt-4">Loading Map...</span>
           </div>
         ) : !hasValidCoordinates ? (
-          <div className="flex items-center justify-center w-full h-[400px]">
-            <span className="text-red-500">Invalid coordinates</span>
+          // 4. Styled Error State
+          <div className="flex flex-col items-center justify-center w-full h-[400px] bg-muted/50">
+             <span className="text-2xl" role="img" aria-label="map-error">🗺️</span>
+             <span className="text-muted-foreground mt-2">
+               Map coordinates not available for this place.
+             </span>
           </div>
         ) : (
           <GoogleMap
@@ -115,22 +143,12 @@ const PlacesDetails = ({ PlaceDetailsPageRef }) => {
               fullscreenControl: true,
             }}
           >
+            {/* 5. Simplified Marker */}
             <Marker
-              position={{
-                lat: latitude,
-                lng: longitude,
-              }}
-              icon={{
-                path: window.google.maps.SymbolPath.CIRCLE,
-                scale: 12,
-                fillColor: "#000000",
-                fillOpacity: 1,
-                strokeWeight: 1,
-                strokeColor: "#ffffff",
-              }}
+              position={mapCenter}
               label={{
                 text: "📍",
-                fontSize: "18px",
+                fontSize: "24px",
               }}
             />
           </GoogleMap>

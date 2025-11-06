@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+// UPDATED to use Amber/Orange theme
 const GLOBE_CONFIG = {
   width: 800,
   height: 800,
@@ -12,13 +13,13 @@ const GLOBE_CONFIG = {
   devicePixelRatio: 2,
   phi: 0,
   theta: 0.3,
-  dark: 0,
+  dark: 1, // Darker globe texture
   diffuse: 0.4,
   mapSamples: 16000,
   mapBrightness: 1.2,
-  baseColor: [1, 1, 1],
-  markerColor: [251 / 255, 100 / 255, 21 / 255],
-  glowColor: [1, 1, 1],
+  baseColor: [0.85, 0.85, 0.85], // Light gray continents
+  markerColor: [245 / 255, 158 / 255, 11 / 255], // Amber-500
+  glowColor: [234 / 255, 179 / 255, 8 / 255], // Amber-400
   markers: [
     { location: [14.5995, 120.9842], size: 0.03 },
     { location: [19.076, 72.8777], size: 0.1 },
@@ -64,7 +65,7 @@ export default function Globe({
     state.phi = phi + r;
     state.width = width * 2;
     state.height = width * 2;
-  }, [r]);
+  }, [r, width]); // Added width dependency
 
   const onResize = () => {
     if (canvasRef.current) {
@@ -76,16 +77,22 @@ export default function Globe({
     window.addEventListener("resize", onResize);
     onResize();
 
-    const globe = createGlobe(canvasRef.current, {
-      ...config,
-      width: width * 2,
-      height: width * 2,
-      onRender,
-    });
-
-    setTimeout(() => (canvasRef.current.style.opacity = "1"));
-    return () => globe.destroy();
-  }, []);
+    let globe;
+    if (canvasRef.current) {
+       globe = createGlobe(canvasRef.current, {
+        ...config,
+        width: width * 2,
+        height: width * 2,
+        onRender,
+      });
+      setTimeout(() => (canvasRef.current.style.opacity = "1"));
+    }
+    
+    return () => {
+      globe?.destroy();
+      window.removeEventListener("resize", onResize);
+    }
+  }, [config, onRender]); // Updated dependencies
 
   return (
     (<div
