@@ -34,6 +34,16 @@ function App() {
   const footerRef = useRef(null);
   const { locationInfoRef } = useRefContext();
 
+
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAP_API_KEY;
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
+
   useEffect(() => {
     if (!loggedIn && isAuthenticated) {
       setLoggedIn(true);
