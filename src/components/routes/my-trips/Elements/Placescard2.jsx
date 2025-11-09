@@ -3,13 +3,13 @@ import { LogInContext } from "@/Context/LogInContext/Login";
 import PlaceCards from "../Cards/PlaceCards"; // Update path based on your folder structure
 import HotelCards from "../Cards/HotelCards";
 
-function Placescard() {
+function Placescard2() {
   const { trip } = useContext(LogInContext);
   let itinerary;
   if (Array.isArray(trip?.tripData)) {
-    itinerary = trip?.tripData[0]?.itinerary;
+    itinerary = trip?.tripData2[0]?.itinerary;
   } else {
-    itinerary = trip?.tripData?.itinerary;
+    itinerary = trip?.tripData2?.itinerary;
   }
   if (!itinerary) {
     return (
@@ -69,16 +69,10 @@ function Placescard() {
               {day.theme && `: ${day.theme}`}
             </h3>
 
+            {/* Check if activities/places exist and is an array */}
             {day.activities && Array.isArray(day.activities) && day.activities.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {day.activities.map((place, placeIndex) => {
-                  if (!place) return null;
-                  return <PlaceCards key={placeIndex} place={place} />;
-                })}
-              </div>
-            ) : day.places && Array.isArray(day.places) && day.places.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {day.places.map((place, placeIndex) => {
                   if (!place) return null;
                   return <PlaceCards key={placeIndex} place={place} />;
                 })}
@@ -95,4 +89,4 @@ function Placescard() {
   );
 }
 
-export default Placescard;
+export default Placescard2;

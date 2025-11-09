@@ -96,7 +96,7 @@ function Hero({ heroRef }) {
           </h1>
           <div className="relative inline-block w-full">
             <h1 className="font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-600 dark:from-orange-400 dark:via-amber-300 dark:to-yellow-400 bg-clip-text text-transparent pb-3 leading-tight">
-              JourneyJolt
+              Travella
             </h1>
             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2/3 md:w-3/4 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 dark:from-orange-400 dark:via-amber-300 dark:to-yellow-400 rounded-full"></div>
           </div>

@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // UPDATED: Added gradient for a more "JourneyJolt" feel
+        // UPDATED: Added gradient for a more "Travella" feel
         default:
           "bg-gradient-to-r from-primary/90 to-primary/70 text-primary-foreground hover:from-primary/90 hover:to-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/30",
         destructive:

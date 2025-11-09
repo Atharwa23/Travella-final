@@ -61,14 +61,12 @@ function PlaceCards({ place }) {
   }, [place, city]);
 
   const handleSelectPlace = () => {
-    // Pass the place object with the resolved image URL
     setSelectedPlace({
       ...place,
       imageUrl: imageUrl
     });
   };
-
-  // 5. Cleaned up state, these are now constants
+  
   const latitude = place.coordinates?.latitude || 0;
   const longitude = place.coordinates?.longitude || 0;
   const latStr = encodeURIComponent(latitude);

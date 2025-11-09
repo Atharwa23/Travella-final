@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* New JourneyJolt Theme (Light Mode) */
+    /* New Travella Theme (Light Mode) */
     --background: 20 14.3% 95.9%; /* warm-gray-50 */
     --foreground: 20 14.3% 4.1%; /* warm-gray-950 */
 
@@ -37,7 +37,7 @@
   }
 
   .dark {
-    /* New JourneyJolt Theme (Dark Mode) */
+    /* New Travella Theme (Dark Mode) */
     --background: 20 14.3% 5.1%; /* near-black */
     --foreground: 20 14.3% 97.9%; /* warm-gray-50 */
 

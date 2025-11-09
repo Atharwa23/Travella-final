@@ -158,7 +158,7 @@ function App() {
       <ProgressBar />
       <div className="app tracking-tighter min-w-[320px]">
         <Header headerRef={headerRef} />
-        <div className="container max-w-[1024px] w-full min-w-[320px] h-auto">
+        <div className="w-full min-w-[320px] h-auto">
           <Routes>
             <Route path="/" element={<Hero heroRef={heroRef} />} />
             <Route

@@ -182,12 +182,12 @@ function CreateTrip({ createTripPageRef }) {
     }
   }, [user]);
 
-  // YOURS - UNCHANGED
-  const SaveTrip = async (TripData) => {
+  const SaveTrip = async (TripData, TripData2) => {
     const User = JSON.parse(localStorage.getItem("User"));
     const id = Date.now().toString();
     setIsLoading(true);
     const tripToSave = Array.isArray(TripData) ? TripData[0] : TripData;
+    const tripToSave2 = Array.isArray(TripData2) ? TripData2[0] : TripData2;
     const normalizeItinerary = (raw) => {
       if (!raw) return [];
       if (Array.isArray(raw)) return raw;
@@ -277,7 +277,19 @@ function CreateTrip({ createTripPageRef }) {
         ? tripToSave
         : null) ||
       tripToSave;
+
+    const rawItinerary2 =
+      tripToSave2.itinerary ||
+      tripToSave2.tripData?.itinerary ||
+      tripToSave2.itineraries ||
+      tripToSave2.plan ||
+      (Object.keys(tripToSave2).some((k) => /^day\d+$/i.test(k))
+        ? tripToSave2
+        : null) ||
+      tripToSave2;
     const normalizedItinerary = normalizeItinerary(rawItinerary);
+    const normalizedItinerary2 = normalizeItinerary(rawItinerary2);
+
     const parseCoordinates = (coord) => {
       if (!coord) return { latitude: null, longitude: null };
       if (typeof coord === "object") {
@@ -320,6 +332,16 @@ function CreateTrip({ createTripPageRef }) {
       tripToSave.accommodations ||
       tripToSave.stays ||
       [];
+
+    const rawHotels2 =
+      tripToSave2.hotelOptions ||
+      tripToSave2.hotels ||
+      tripToSave2.tripData?.hotelOptions ||
+      tripToSave2.tripData?.hotels ||
+      tripToSave2.hotelList ||
+      tripToSave2.accommodations ||
+      tripToSave2.stays ||
+      [];
     const normalizedHotels = Array.isArray(rawHotels)
       ? rawHotels.map((h) => {
           const name =
@@ -348,21 +370,62 @@ function CreateTrip({ createTripPageRef }) {
           };
         })
       : [];
+
+
+    const normalizedHotels2 = Array.isArray(rawHotels2)
+      ? rawHotels2.map((h) => {
+          const name =
+            h?.hotelName || h?.name || h?.hotel_name || h?.hotel || "";
+          const description = h?.description || h?.details || "";
+          const address = h?.address || h?.formattedAddress || "";
+          const price =
+            h?.price || h?.priceRange || h?.pricing || h?.Budget || "";
+          const photos = h?.imageUrl || h?.image_url || h?.photos || null;
+          const coords = parseCoordinates(
+            h?.coordinates ||
+              h?.locationMap ||
+              h?.location ||
+              h?.latlng ||
+              h?.loc
+          );
+          return {
+            name,
+            description,
+            address,
+            price,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            photos,
+            raw: h,
+          };
+        })
+      : [];
+
     const normalizedTripData = {
       ...tripToSave,
       itinerary: normalizedItinerary,
       hotels: normalizedHotels,
     };
+
+    const normalizedTripData2 = {
+      ...tripToSave2,
+      itinerary: normalizedItinerary2,
+      hotels: normalizedHotels2,
+    };
+
+
     await setDoc(doc(db, "Trips", id), {
       tripId: id,
       userSelection: formData,
       tripData: normalizedTripData,
+      tripData2: normalizedTripData2,
       userName: User?.name,
       userEmail: User?.email,
     });
+
+    console.log('Tripdata', TripData)
+    console.log('TripData2', TripData2)
     setIsLoading(false);
-    localStorage.setItem("Trip", JSON.stringify(normalizedTripData));
-    localStorage.setItem("UserSelection", JSON.stringify(formData));
     navigate("/my-trips/" + id);
   };
 
@@ -399,8 +462,9 @@ function CreateTrip({ createTripPageRef }) {
       });
       setIsLoading(true);
       const result = await chatSession.sendMessage(FINAL_PROMPT);
-      console.log(result)
-      let rawText;
+      const res2 = await chatSession.sendMessage(FINAL_PROMPT);
+      
+      let rawText
       if (result?.response && typeof result.response.text === "function") {
         const maybe = result.response.text();
         rawText = maybe instanceof Promise ? await maybe : maybe;
@@ -409,6 +473,21 @@ function CreateTrip({ createTripPageRef }) {
       } else {
         rawText = result;
       }
+
+      let rawText2
+      if (res2?.response && typeof res2.response.text === "function") {
+        const maybe2 = res2.response.text();
+        rawText2 = maybe2 instanceof Promise ? await maybe2 : maybe2;
+      } else if (res2?.text) {
+        rawText2 = res2.text;
+      } else {
+        rawText2 = result;
+      }
+
+      console.log('RawText', rawText)
+      console.log('rawText2', rawText2)
+
+
       let parsed = await parseJSONSafe(rawText);
       if (!parsed) {
         try {
@@ -417,15 +496,27 @@ function CreateTrip({ createTripPageRef }) {
           parsed = null;
         }
       }
-      if (!parsed) {
+
+      let parsed2 = await parseJSONSafe(rawText2);
+      if (!parsed2) {
+        try {
+          parsed2 = JSON.parse(String(rawText2));
+        } catch (e) {
+          parsed2 = null;
+        }
+      }
+
+      if (!parsed || !parsed2) {
         setIsLoading(false);
         toast.dismiss(toastId);
         toast.error("Received invalid response from the AI. Please try again.");
-        console.error("Invalid AI response:", rawText);
+        console.error("Invalid AI response:", rawText, rawText2);
         return;
       }
       const prepared = normalizeRawTripShape(parsed);
-      await SaveTrip(prepared);
+      const prepared2 = normalizeRawTripShape(parsed2);
+      await SaveTrip(prepared, prepared2);
+      
       toast.dismiss(toastId);
       toast.success("Trip Generated Successfully");
     } catch (error) {
@@ -800,8 +891,8 @@ function CreateTrip({ createTripPageRef }) {
                 <span className="flex gap-2">
                   <span className="text-center w-full opacity-90 mx-auto tracking-tight text-primary/80">
                     {user
-                      ? "Logged In Securely to JourneyJolt with Google Authentication"
-                      : "Sign In to JourneyJolt with Google Authentication Securely"}
+                      ? "Logged In Securely to Travella with Google Authentication"
+                      : "Sign In to Travella with Google Authentication Securely"}
                   </span>
                 </span>
                 {user ? (

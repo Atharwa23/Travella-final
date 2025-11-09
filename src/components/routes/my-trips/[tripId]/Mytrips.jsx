@@ -4,6 +4,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom'
 import Hotels from '../Elements/Hotels';
+import Hotels2 from '../Elements/Hotelcard2'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Hotel, Heart, Calendar, ArrowLeft } from 'lucide-react';
+import Places2 from '../Elements/Places2';
 import { LogInContext } from '@/Context/LogInContext/Login';
 import Places from '../Elements/Places';
 
@@ -12,25 +17,27 @@ function Mytrips() {
   const { setTrip} = useContext(LogInContext);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [it, setit] = useState(true)
+  const [it2, setit2] = useState(true)
 
-  // Transform trip data from stored format to UI format
   const normalizeTrip = (rawData) => {
     try {
-
-      // If tripData is an array (from the AI response), use its first item
       let trip = rawData;
+      console.log("Trip: ",trip)
       if (Array.isArray(rawData?.tripData)) {
         trip = {
           ...rawData,
-          ...rawData.tripData[0],  // Spread the first item's properties to root
-          tripData: rawData.tripData[0]  // Also keep it in tripData for compatibility
+          ...rawData.tripData[0],
+          tripData: rawData.tripData[0],
+          tripData2: rawData.tripdata2[0]
         };
       }
 
         const rawItinerary = trip?.tripData?.itinerary || trip?.itinerary || {};
+        const rawItinerary2 = trip?.tripData2?.itinerary || trip?.itinerary || {};
         const normalizedItinerary = Array.isArray(rawItinerary)
   ? rawItinerary.map((item, index) => ({
-      day: item.day || index + 1, // fallback if 'day' not provided
+      day: item.day || index + 1,
       notes: item.notes || '',
       activities: Array.isArray(item.activities)
         ? item.activities.map(activity => ({
@@ -47,26 +54,52 @@ function Mytrips() {
     }))
   : [];
 
-        const parseCoordinates = (coord) => {
-          if (!coord) return { latitude: null, longitude: null };
-          if (typeof coord === 'object') {
-            const lat = Number(coord.latitude ?? coord.lat ?? coord.latitute ?? coord.latitude ?? null);
-            const lng = Number(coord.longitude ?? coord.lng ?? coord.lon ?? coord.long ?? null);
-            return {
-              latitude: Number.isFinite(lat) ? lat : null,
-              longitude: Number.isFinite(lng) ? lng : null,
-            };
-          }
-          else return { latitude: null, longitude: null };
-        };
+        const normalizedItinerary2 = Array.isArray(rawItinerary2)
+  ? rawItinerary2.map((item, index) => ({
+      day: item.day || index + 1,
+      notes: item.notes || '',
+      activities: Array.isArray(item.activities)
+        ? item.activities.map(activity => ({
+            activityName: activity.activity || '',
+            details: activity.details || '',
+            location: activity.location || '',
+            timings: activity.timings || '',
+            pricing: activity.pricing || '',
+            imageUrl: activity.imageUrl || '',
+            notes: activity.notes || '',
+            coordinates: activity.coordinates || null
+          }))
+        : []
+    }))
+  : [];
 
-        // Normalize hotels: some trips use 'hotelOptions' with hotelName and coordinates string
         const rawHotels = trip?.tripData?.hotels || trip?.tripData?.hotelOptions || trip?.hotelOptions || [];
+        const rawHotels2 = trip?.tripData2?.hotels || trip?.tripData2?.hotelOptions || trip?.hotelOptions || [];
 
         const normalizedHotels = Array.isArray(rawHotels)
           ? rawHotels.map((h) => {
-              // First try direct properties, then check raw data
-              // console.log("h", h)
+              const name = h?.name || h?.hotelName || h?.hotel_name || h?.hotel || h?.raw?.hotel_name || '';
+              const description = h?.description || h?.details || '';
+              const address = h?.address || h?.formattedAddress || '';
+              const price = h?.price || h?.priceRange || h?.pricing || h?.Budget || '';
+              const photos = h?.imageUrl || h?.image_url || h?.photos || h?.raw?.image_url || null;
+              const latitude = h?.latitude;
+              const longitude = h?.longitude;
+              return {
+                name,
+                description,
+                address,
+                price,
+                latitude,
+                longitude,
+                photos,
+                raw: h,
+              };
+            })
+          : [];
+
+        const normalizedHotels2 = Array.isArray(rawHotels2)
+          ? rawHotels2.map((h) => {
               const name = h?.name || h?.hotelName || h?.hotel_name || h?.hotel || h?.raw?.hotel_name || '';
               const description = h?.description || h?.details || '';
               const address = h?.address || h?.formattedAddress || '';
@@ -94,10 +127,14 @@ function Mytrips() {
             itinerary: normalizedItinerary,
             hotels: normalizedHotels,
           },
+          tripData2: {
+            ...trip,
+            itinerary: normalizedItinerary2,
+            hotels: normalizedHotels2,
+          },
         };
 
-        // console.log("Normalized Trip:", normalizedTrip);
-
+        console.log(normalizedTrip);
         return normalizedTrip;
 
       
@@ -123,10 +160,8 @@ function Mytrips() {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        // console.log('[Mytrips] fetched trip doc:', data);
         const normalizedData = normalizeTrip(data);
         setTrip(normalizedData);
-        // console.log("Normalized Trip Data:", normalizedData);
       } else {
         console.warn(`[Mytrips] Trip doc not found for id: ${tripId}`);
         toast.error('No such trip');
@@ -143,29 +178,163 @@ function Mytrips() {
     }
   };
 
+  const handlePrefer = (e) => {
+    if(e == 1) {
+      setit2(false)
+      setit(true)
+    } else if(e == 2){
+      setit(false)
+      setit2(true)
+    }
+  }
+
+  const handleBack = (e) => {
+    if(e == 1) {
+      setit2(true)
+      setit(true)
+    } else if(e == 2){
+      setit(true)
+      setit2(true)
+    }
+  }
+  
   useEffect(() => {
     getTripData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tripId]);
   
 
   return (
-<div className='py-2'>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Hotels Section - Full Width */}
+        <Card className="border-2 border-blue-200 dark:border-blue-900 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Hotel className="w-6 h-6" />
+              Accommodations
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <Hotels />
+          </CardContent>
+        </Card>
 
-  {/* Box 1: Hotels */}
-  <div className='p-4 pl-8 bg-white rounded-lg shadow-md dark:bg-gray-800 border dark:border-gray-700'>
-    <Hotels/>
-  </div>
+        {/* Both Itineraries Side by Side */}
+        {it && it2 &&  
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            
+            {/* Itinerary 1 */}
+            <Card className="border-2 border-emerald-200 dark:border-emerald-900 shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
+              <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Itinerary 1
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="pt-6 flex-1 overflow-auto">
+                <div className="space-y-4">
+                  <Places />
+                </div>
+              </CardContent>
 
-  <div className='my-4'></div>
+              <div className="px-6 pb-6 mt-auto">
+                <Button 
+                  onClick={() => handlePrefer(1)}
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Prefer this response
+                </Button>
+              </div>
+            </Card>
 
-  {/* Box 2: Places */}
-  <div className='p-4 bg-white rounded-lg shadow-md dark:bg-gray-800 border dark:border-gray-700'>
-    <Places/>
-  </div>
-  
-</div>
+            {/* Itinerary 2 */}
+            <Card className="border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
+              <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Itinerary 2
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="pt-6 flex-1 overflow-auto">
+                <div className="space-y-4">
+                  <Places2 />
+                </div>
+              </CardContent>
 
+              <div className="px-6 pb-6 mt-auto">
+                <Button 
+                  onClick={() => handlePrefer(2)}
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Prefer this response
+                </Button>
+              </div>
+            </Card>
+          </div>
+        }
+
+        {/* Single Itinerary 1 View */}
+        {it && !it2 && 
+          <Card className="border-2 border-emerald-200 dark:border-emerald-900 shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Itinerary 1
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <Places />
+              </div>
+            </CardContent>
+
+            <div className="px-6 pb-6">
+              <Button
+                onClick={() => handleBack(1)}
+                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Comparison
+              </Button>
+            </div>
+          </Card>
+        }
+
+        {/* Single Itinerary 2 View */}
+        {it2 && !it &&
+          <Card className="border-2 border-purple-200 dark:border-purple-900 shadow-lg hover:shadow-xl transition-shadow">
+            <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Itinerary 2
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <Places2 />
+              </div>
+            </CardContent>
+
+            <div className="px-6 pb-6">
+              <Button 
+                onClick={() => handleBack(2)}
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Comparison
+              </Button>
+            </div>
+          </Card>
+        }
+      </div>
+    </div>
   )
 }
 

@@ -28,11 +28,12 @@ const safetySettings = [
 ];
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp", // Changed from "2.0-flash-exp"
+  model: "gemini-2.5-flash", // Changed from "2.0-flash-exp"
   safetySettings: safetySettings, // Add safety settings
 });
 
 const generationConfig = {
+  candidateCount: 2,
   temperature: 1,
   topP: 0.95,
   topK: 64,
@@ -42,5 +43,5 @@ const generationConfig = {
 
 export const chatSession = model.startChat({
   generationConfig,
-  history: [], // THE FIX: This MUST be an empty array.
+  history: [],
 });
