@@ -1,4 +1,4 @@
-# 🌍 Travella-Final: AI-Based Trip Planner
+# 🌍 Travella: AI-Based Trip Planner
 
 ## ✈️ About The Project
 
@@ -27,7 +27,7 @@ This project is built with the following major frameworks, libraries, and servic
 
 ## 🚀 Getting Started
 
-Setting up Travella-Final is simple. Follow these instructions to set up the project locally on your machine for development and testing.
+Setting up Travella is simple. Follow these instructions to set up the project locally on your machine for development and testing.
 
 ### Prerequisites
 
