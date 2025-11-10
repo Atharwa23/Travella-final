@@ -23,7 +23,7 @@ function Mytrips() {
   const normalizeTrip = (rawData) => {
     try {
       let trip = rawData;
-      console.log("Trip: ",trip)
+      // console.log("Trip: ",trip)
       if (Array.isArray(rawData?.tripData)) {
         trip = {
           ...rawData,
@@ -134,7 +134,7 @@ function Mytrips() {
           },
         };
 
-        console.log(normalizedTrip);
+        // console.log(normalizedTrip);
         return normalizedTrip;
 
       

@@ -11,6 +11,7 @@ function Placescard() {
   } else {
     itinerary = trip?.tripData?.itinerary;
   }
+  // console.log(itinerary)
   if (!itinerary) {
     return (
       <div className="text-center py-10">

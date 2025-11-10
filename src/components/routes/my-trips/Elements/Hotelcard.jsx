@@ -12,6 +12,7 @@ function Hotelcard() {
 
   const { trip } = useContext(LogInContext);
   const hotels = trip?.tripData?.hotels;
+  // console.log(hotels)
 
   const { holetsRef } = useRefContext();
 

@@ -22,6 +22,7 @@ function Header({headerRef}) {
   };
   const LogIn = () => {
     // loginWithRedirect();
+    console.log(user)
     loginWithPopup();
   };
 
